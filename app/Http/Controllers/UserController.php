@@ -52,7 +52,7 @@ public function store(Request $request)
         'photo' => $photoPath,
     ]);
 
-    return redirect()->route('users.index')->with('success', 'User created successfully.');
+    return redirect()->route('products.public_index')->with('success', 'User created successfully.');
 }
 
 
