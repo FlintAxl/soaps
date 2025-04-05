@@ -32,6 +32,29 @@
         </div>
     </div>
 
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h3>Yearly Sales</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="yearlySalesChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h3>Monthly Sales</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlySalesChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-8">
             <div class="card mb-4">
@@ -39,7 +62,7 @@
                     <h3>Daily Sales</h3>
                 </div>
                 <div class="card-body">
-                    <canvas id="salesBarChart" height="300"></canvas>
+                    <canvas id="salesBarChart" height="250"></canvas>
                 </div>
             </div>
         </div>
@@ -49,7 +72,7 @@
                     <h3>Product Sales Distribution</h3>
                 </div>
                 <div class="card-body">
-                    <canvas id="productPieChart" height="300"></canvas>
+                    <canvas id="productPieChart" height="250"></canvas>
                 </div>
             </div>
         </div>
@@ -60,8 +83,7 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-   
-   $(document).ready(function() {
+    $(document).ready(function() {
         // Set default dates (last 30 days)
         const endDate = new Date();
         const startDate = new Date();
@@ -94,7 +116,7 @@
         return [year, month, day].join('-');
     }
     
-    let salesBarChart, productPieChart;
+    let salesBarChart, productPieChart, yearlySalesChart, monthlySalesChart;
     
     function loadChartData() {
         const formData = $('#dateRangeForm').serialize();
@@ -106,6 +128,8 @@
             success: function(response) {
                 updateBarChart(response.dailySales);
                 updatePieChart(response.productSales);
+                updateYearlyChart(response.yearlySales);
+                updateMonthlyChart(response.monthlySales);
             },
             error: function(xhr) {
                 console.error(xhr.responseText);
@@ -152,6 +176,126 @@
                         callbacks: {
                             label: function(context) {
                                 return '₱' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function updateYearlyChart(data) {
+        const ctx = document.getElementById('yearlySalesChart').getContext('2d');
+        const labels = data.map(item => item.year);
+        const values = data.map(item => item.total);
+        
+        if (yearlySalesChart) {
+            yearlySalesChart.destroy();
+        }
+        
+        yearlySalesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Yearly Sales (₱)',
+                    data: values,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₱' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '₱' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function updateMonthlyChart(data) {
+        const ctx = document.getElementById('monthlySalesChart').getContext('2d');
+        
+        // Group data by year
+        const groupedData = {};
+        data.forEach(item => {
+            if (!groupedData[item.year]) {
+                groupedData[item.year] = Array(12).fill(0);
+            }
+            groupedData[item.year][item.month - 1] = item.total;
+        });
+        
+        // Prepare datasets for each year
+        const datasets = [];
+        const colors = [
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 206, 86, 0.7)',
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(153, 102, 255, 0.7)'
+        ];
+        
+        let colorIndex = 0;
+        for (const year in groupedData) {
+            datasets.push({
+                label: year,
+                data: groupedData[year],
+                backgroundColor: colors[colorIndex % colors.length],
+                borderColor: colors[colorIndex % colors.length].replace('0.7', '1'),
+                borderWidth: 1
+            });
+            colorIndex++;
+        }
+        
+        if (monthlySalesChart) {
+            monthlySalesChart.destroy();
+        }
+        
+        monthlySalesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₱' + value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        stacked: false
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₱' + context.raw.toLocaleString();
                             }
                         }
                     }

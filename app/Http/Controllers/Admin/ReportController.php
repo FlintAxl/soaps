@@ -27,7 +27,7 @@ class ReportController extends Controller
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
-        // Bar chart data - daily sales
+        // Daily sales data
         $dailySales = Order::select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('SUM(total_amount) as total')
@@ -38,7 +38,31 @@ class ReportController extends Controller
             ->orderBy('date')
             ->get();
 
-        // Pie chart data - product sales
+        // Monthly sales data (for the selected year)
+        $monthlySales = Order::select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('SUM(total_amount) as total')
+            )
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', 'completed')
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+
+        // Yearly sales data
+        $yearlySales = Order::select(
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('SUM(total_amount) as total')
+            )
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', 'completed')
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get();
+
+        // Product sales data
         $productSales = OrderItem::select(
                 'products.name as product_name',
                 DB::raw('SUM(order_items.quantity * order_items.price) as total_sales')
@@ -53,6 +77,8 @@ class ReportController extends Controller
 
         return response()->json([
             'dailySales' => $dailySales,
+            'monthlySales' => $monthlySales,
+            'yearlySales' => $yearlySales,
             'productSales' => $productSales
         ]);
     }
