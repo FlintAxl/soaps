@@ -44,6 +44,8 @@
         </table>
     </div>
 
-    {{ $orders->links() }}
+    <div class="d-flex justify-content-center">
+        {{ $orders->onEachSide(1)->links('pagination::bootstrap-5') }}
+    </div>
 </div>
 @endsection

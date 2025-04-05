@@ -196,14 +196,15 @@
     <div class="row mt-5">
         <div class="col-12">
             <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                    {{ $products->appends(request()->query())->links() }}
+                <ul class="pagination justify-content-center flex-wrap">
+                    {{ $products->appends(request()->query())->onEachSide(1)->links('pagination::bootstrap-4') }}
                 </ul>
             </nav>
         </div>
     </div>
     @endif
 </div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
