@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    
 
 </head>
 <body class="@auth @if(auth()->user()->role === 'admin') admin-logged-in @endif @endauth">
@@ -41,11 +42,10 @@
             <div class="admin-header mt-4">
                 <i class="fas fa-chart-line"></i> Charts & Reports
             </div>
-
-            <!-- You can add more report links here if needed -->
-            <!-- <a href="#">
-                <i class="fas fa-chart-bar"></i> Another Report
-            </a> -->
+            <!-- New Charts & Reports Section -->
+            <a href="{{ route('admin.reports.sales') }}">
+                <i class="fas fa-chart-bar"></i> Sales Reports
+            </a>
             <div class="admin-header mt-4">
                 <i class="fas fa-user"></i> User Actions
             </div>

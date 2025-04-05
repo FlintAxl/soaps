@@ -7,7 +7,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OrderController; // Added this
 use App\Http\Controllers\ReviewController; // Added this
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\SalesReportController;
+use App\Http\Controllers\Admin\ReportController;
 use Illuminate\Support\Facades\Route;
 use App\Models\Product; // Add this at the top
 /*
@@ -145,3 +145,9 @@ Route::prefix('admin')->middleware(['auth', 'can:admin'])->group(function () {
     Route::post('/orders/{order}/update-status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
 });
 
+
+Route::prefix('admin')->group(function () {
+    
+    Route::get('/reports/sales', [ReportController::class, 'salesReports'])->name('admin.reports.sales');
+    Route::post('/reports/sales-data', [ReportController::class, 'getSalesData'])->name('admin.reports.sales-data');
+});
